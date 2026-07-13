@@ -1,15 +1,19 @@
-import { pwa, baseurl } from '../../_config.yml';
 import Toast from 'bootstrap/js/src/toast';
 
 if ('serviceWorker' in navigator) {
-  if (pwa.enabled) {
-    const swUrl = `${baseurl}/sw.min.js`;
-    const notification = document.getElementById('notification');
-    const btnRefresh = notification.querySelector('.toast-body>button');
-    const popupWindow = Toast.getOrCreateInstance(notification);
+  // Get Jekyll config from URL parameters
+  const src = new URL(document.currentScript.src);
+  const register = src.searchParams.get('register');
+  const baseUrl = src.searchParams.get('baseurl');
+
+  if (register) {
+    const swUrl = `${baseUrl}/sw.min.js`;
+    const $notification = document.getElementById('notification');
+    const $btnUpdate = $notification.querySelector('[aria-label="Update"]');
+    const popupWindow = Toast.getOrCreateInstance($notification);
 
     navigator.serviceWorker.register(swUrl).then((registration) => {
-      // In case the user ignores the notification
+      // Restore the update window that was last manually closed by the user
       if (registration.waiting) {
         popupWindow.show();
       }
@@ -24,7 +28,7 @@ if ('serviceWorker' in navigator) {
         });
       });
 
-      btnRefresh.addEventListener('click', () => {
+      $btnUpdate.addEventListener('click', () => {
         if (registration.waiting) {
           registration.waiting.postMessage('SKIP_WAITING');
         }
